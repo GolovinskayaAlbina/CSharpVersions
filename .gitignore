@@ -1,0 +1,9 @@
+.vs/
+Common/bin/
+Common/obj/
+CSharpVersion5/bin/
+CSharpVersion5/obj/
+CSharpVersion7_3/bin/
+CSharpVersion7_3/obj/Debug/Before-PostSharp/CSharpVersion7_3.pspdb
+CSharpVersion7_3/obj/
+packages/

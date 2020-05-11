@@ -1,8 +1,8 @@
 ﻿using Common.DataBase.Entities;
-using Common.RestApi.Requests;
+using CSharpVersion5.Service.Requests;
 using System.Collections.Generic;
 
-namespace Common.RestApi.Validators
+namespace CSharpVersion5.Service.Validators
 {
     public interface IValidator
     {

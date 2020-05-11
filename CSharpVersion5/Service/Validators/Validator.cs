@@ -1,6 +1,5 @@
 ﻿using Common.DataBase.Entities;
-using Common.RestApi.Requests;
-using Common.RestApi.Validators;
+using CSharpVersion5.Service.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;

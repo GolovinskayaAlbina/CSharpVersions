@@ -1,9 +1,9 @@
 ﻿using Common.DataBase.Repositories;
 using Common.RestApi.Emulators.Controllers;
-using Common.RestApi.Requests;
-using Common.RestApi.Responses;
-using Common.RestApi.Validators;
 using CSharpVersion5.Service.Attributes;
+using CSharpVersion5.Service.Requests;
+using CSharpVersion5.Service.Responses;
+using CSharpVersion5.Service.Validators;
 using System.Threading.Tasks;
 
 namespace CSharpVersion5.Service

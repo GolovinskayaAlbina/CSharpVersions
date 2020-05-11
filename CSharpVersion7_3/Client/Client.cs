@@ -1,7 +1,7 @@
 ﻿using Common.DataBase.Entities;
 using Common.RestApi;
-using Common.RestApi.Requests;
-using Common.RestApi.Responses;
+using CSharpVersion7_3.Service.Requests;
+using CSharpVersion7_3.Service.Responses;
 using System;
 using System.Collections.Generic;
 using System.Net;

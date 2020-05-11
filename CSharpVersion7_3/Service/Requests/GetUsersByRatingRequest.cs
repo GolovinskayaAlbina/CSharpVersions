@@ -1,4 +1,4 @@
-﻿namespace Common.RestApi.Requests
+﻿namespace CSharpVersion7_3.Service.Requests
 {
     public class GetUsersByRatingRequest
     {

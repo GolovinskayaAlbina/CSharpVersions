@@ -12,7 +12,7 @@ namespace Common.DataBase.Repositories
     {
         private readonly IDbConnectionFactory _dbConnectionFactory;
 
-        public DBRepository(DbConnectionEmulatorFactory dbConnectionFactory)
+        public DBRepository(IDbConnectionFactory dbConnectionFactory)
         {
             _dbConnectionFactory = dbConnectionFactory;
         }

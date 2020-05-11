@@ -1,7 +1,7 @@
 ﻿using Common.DataBase.Entities;
 using System.Collections.Generic;
 
-namespace Common.RestApi.Responses
+namespace CSharpVersion7_3.Service.Responses
 {
     public class GetUsersByRatingResponse
     {

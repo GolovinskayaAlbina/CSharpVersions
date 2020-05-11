@@ -1,6 +1,6 @@
 ﻿using Common.RestApi;
-using Common.RestApi.Requests;
-using Common.RestApi.Responses;
+using CSharpVersion5.Service.Requests;
+using CSharpVersion5.Service.Responses;
 using System;
 using System.Net;
 using System.Threading.Tasks;

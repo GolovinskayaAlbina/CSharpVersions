@@ -1,8 +1,6 @@
-﻿using Common.DataBase.Emulators;
-using Common.DataBase.Repositories;
+﻿using Common.DIContainers;
 using Common.RestApi.Attributes;
 using Common.RestApi.Emulators.Controllers;
-using Common.RestApi.Validators;
 using System;
 using System.Linq;
 using System.Net;
@@ -13,66 +11,66 @@ namespace Common.RestApi
 {
     class ServiceApi
     {
-        public static async Task<Res> CallMethodAsync<Res, Req>(string path, Req request)
+        private readonly Container _container;
+
+        public ServiceApi(Container container)
         {
-            string controller;
-            string action;
-            Type validatorType;
+            _container = container;
+        }
 
-            if (TryParseApiPath(path, out controller, out action))
+        public async Task<Res> CallMethodAsync<Res, Req>(string path, Req request)
+        {
+            //7.0 Tuples <code>(T1 t1,T2 t2) obj =  Do()</code>
+            (bool isSuccess, string controllerName, string actionName) parsedPath = TryParseApiPath(path);
+            if (parsedPath.isSuccess)
             {
-                var controllerType = GetControllerTypeByName(controller, out validatorType);
+                var controllerType = GetControllerTypeByName(parsedPath.controllerName);
 
-                if (controllerType != null && validatorType != null)
+                if (controllerType != null)
                 {
-                    bool isExceptionFilter;
-                    MethodInfo actionInfo;
-                    Type attributeType;
-
-                    if (TryGetAction(controllerType, action, out actionInfo, out attributeType, out isExceptionFilter))
+                    //7.0 Tuples <code>(T1 t1,T2 t2) obj =  Do()</code>
+                    (bool isSuccess, MethodInfo actionInfo, Type attributeType, bool isExceptionFilter) action = TryGetAction(controllerType, parsedPath.actionName);
+                    if (action.isSuccess)
                     {
-                        var controllerArgs = new object[] { new DBRepository(new DbConnectionEmulatorFactory()), Activator.CreateInstance(validatorType) };
-                        var controllerObject = Activator.CreateInstance(actionInfo.DeclaringType, controllerArgs);
-                        if (isExceptionFilter)
+                        var controllerObject = _container.Get(controllerType);
+
+                        try
                         {
-                            var filterObject = (ExceptionFilterAttribute)Activator.CreateInstance(attributeType);
-                            try
+                            return await (Task<Res>)action.actionInfo.Invoke(controllerObject, new object[] { request });
+                        }
+                        catch (Exception ex)
+                        {
+                            if (action.isExceptionFilter)
                             {
-                                return await (Task<Res>)actionInfo.Invoke(controllerObject, new object[] { request });
-                            }
-                            catch(Exception ex)
-                            {
+                                var filterObject = (ExceptionFilterAttribute)Activator.CreateInstance(action.attributeType);
                                 filterObject.OnException(ex);
                             }
-                        }
-                        else
-                        {
-                            return await (Task<Res>)actionInfo.Invoke(controllerObject, new object[] { request });
+                            else
+                            {
+                                throw;
+                            }
                         }
                     }
                 }
             }
 
             Response.ThrowResponseException(HttpStatusCode.NotFound);
-            return default(Res);
+            return default;
         }
-        static Type GetControllerTypeByName(string controller, out Type validatorType)
+
+        //7.0 Tuples <code>(T1,T2) Do(){return (new T1(),new T2())}</code>
+        static Type GetControllerTypeByName(string controllerName)
         {
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(_ => _.GetTypes());
-
-            validatorType = types.Where(_ => _.IsClass && typeof(IValidator).IsAssignableFrom(_))
-                .FirstOrDefault();
-
-            return types.Where(_ => _.IsClass && _.IsSubclassOf(typeof(ControllerEmulator)))
-                .Where(_ => _.Name.ToLower() == controller)
+           return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(_ => _.GetTypes()).Where(_ => _.IsClass && _.IsSubclassOf(typeof(ControllerEmulator)))
+                .Where(_ => _.Name.ToLower() == controllerName)
                 .FirstOrDefault();
         }
-        static bool TryGetAction(Type controllerType, string action, out MethodInfo info, out Type attributeType, out bool isExceptionFilter)
+
+        //7.0 Tuples <code>(T1,T2) Do(){return (new T1(),new T2())}</code>
+        static (bool, MethodInfo, Type, bool) TryGetAction(Type controllerType, string action)
         {
-            isExceptionFilter = false;
-            attributeType = null;
-            info = controllerType.GetMethods()
+            var info = controllerType.GetMethods()
                 .Where(_ => _.Name.ToLower() == action)
                 .FirstOrDefault();
 
@@ -81,31 +79,27 @@ namespace Common.RestApi
                 var attribute = info.GetCustomAttributes(typeof(ExceptionFilterAttribute), true)
                     .FirstOrDefault();
 
-                isExceptionFilter = attribute != null;
-                if (isExceptionFilter)
-                {
-                    attributeType = attribute.GetType();
-                }
-                return true;
+                return (true, info, attribute?.GetType(), attribute != null);
             }
 
-            return false;
+            return (false, null, null, false);
         }
 
-        static bool TryParseApiPath(string path, out string controller, out string action)
+        //7.0 Tuples <code>(T1,T2) Do(){return (new T1(),new T2())}</code>
+        static (bool,string,string) TryParseApiPath(string path)
         {
-            controller = string.Empty;
-            action = string.Empty;
+            var controller = string.Empty;
+            var action = string.Empty;
 
             if (string.IsNullOrEmpty(path))
             {
-                return false;
+                return (false, controller, action);
             }
 
             var apiParts = path.Split( '/' );
             if (apiParts.Length == 0)
             {
-                return false;
+                return (false, controller, action);
             }
             controller = apiParts[0].ToLower() + "controller";
             if (apiParts.Length == 1)
@@ -117,7 +111,7 @@ namespace Common.RestApi
                 action = apiParts[1].ToLower();
             }
 
-            return true;
+            return (true, controller, action);
         }
     }
 }

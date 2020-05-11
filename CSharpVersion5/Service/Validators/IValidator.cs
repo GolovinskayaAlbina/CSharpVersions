@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CSharpVersion5.Service.Validators
 {
-    public interface IValidator
+    interface IValidator
     {
         void ValidateRequest(GetUsersByRatingRequest request);
         void ValidateResponse(IEnumerable<UserRating> users);

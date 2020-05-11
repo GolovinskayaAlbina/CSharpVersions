@@ -6,7 +6,7 @@ using ExceptionFilterAttribute = Common.RestApi.Attributes.ExceptionFilterAttrib
 
 namespace CSharpVersion7_3.Service.Attributes
 {
-    public class ServiceExceptionFilterAttribute: ExceptionFilterAttribute
+    class ServiceExceptionFilterAttribute: ExceptionFilterAttribute
     {
         public override void OnException(Exception exception)
         {

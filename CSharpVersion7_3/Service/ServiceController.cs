@@ -27,7 +27,7 @@ namespace CSharpVersion7_3.Service
             var users = await _repository.GetUsersByRatingAsync(request.Start, request.End);
 
             _validator.ValidateResponse(users);
-            return new GetUsersByRatingResponse { Users = users };
+            return new GetUsersByRatingResponse(users);
         }
     }
 }

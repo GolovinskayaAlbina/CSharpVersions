@@ -19,11 +19,7 @@ namespace CSharpVersion5.Client
 
         public async Task PringUsersByRatingAsync(int start, int end)
         {
-            var request = new GetUsersByRatingRequest
-            {
-                Start = start,
-                End = end
-            };
+            var request = new GetUsersByRatingRequest(start, end);
 
             var response = await GetFromServiceSafely<GetUsersByRatingResponse, GetUsersByRatingRequest>(
                 "service/GetUsersByRating", request);
@@ -42,9 +38,9 @@ namespace CSharpVersion5.Client
             }
             catch (HttpResponseException ex)
             {
-                if (ex.Response.StatusCode == HttpStatusCode.NotFound)
+                if (ex.Response.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    Console.WriteLine(string.Format("{0}: {1}", ex.Response.StatusCode, ex.Response.ReasonPhrase));
+                    LogException(ex).Wait();
                 }
                 else
                 {
@@ -52,6 +48,11 @@ namespace CSharpVersion5.Client
                 }
             }
             return default(Res);
+        }
+
+        private static async Task LogException(HttpResponseException exception)
+        {
+            await Task.Run(() => Console.WriteLine(string.Format("{0}: {1}", exception.Response.StatusCode, exception.Response.ReasonPhrase)));
         }
     }
 }

@@ -9,14 +9,12 @@ using System.Threading.Tasks;
 
 namespace Common.RestApi
 {
-    class ServiceApi
+    class ServiceApi: IDisposable
     {
         private readonly Container _container;
 
-        public ServiceApi(Container container)
-        {
-            _container = container;
-        }
+        //7.0 More expression-bodied members
+        public ServiceApi(Container container) => _container = container;
 
         public async Task<Res> CallMethodAsync<Res, Req>(string path, Req request)
         {
@@ -33,29 +31,36 @@ namespace Common.RestApi
                     if (action.isSuccess)
                     {
                         var controllerObject = _container.Get(controllerType);
-
-                        try
+                        if (action.isExceptionFilter)
                         {
-                            return await (Task<Res>)action.actionInfo.Invoke(controllerObject, new object[] { request });
-                        }
-                        catch (Exception ex)
-                        {
-                            if (action.isExceptionFilter)
+                            try
+                            {
+                                return await callAction(action.actionInfo, controllerObject);
+                            }
+                            catch (Exception ex)
                             {
                                 var filterObject = (ExceptionFilterAttribute)Activator.CreateInstance(action.attributeType);
                                 filterObject.OnException(ex);
                             }
-                            else
-                            {
-                                throw;
-                            }
+                        }
+                        else
+                        {
+                            return await callAction(action.actionInfo, controllerObject);
                         }
                     }
                 }
             }
 
             Response.ThrowResponseException(HttpStatusCode.NotFound);
+
+            //7.1 Default literal expressions <code>default</code>
             return default;
+
+            //7.0 Local functions <code>T method(){return default}</code>
+            async Task<Res> callAction(MethodInfo actionInfo, object controllerObject)
+            {
+                return await(Task<Res>)actionInfo.Invoke(controllerObject, new object[] { request });
+            }
         }
 
         //7.0 Tuples <code>(T1,T2) Do(){return (new T1(),new T2())}</code>
@@ -112,6 +117,11 @@ namespace Common.RestApi
             }
 
             return (true, controller, action);
+        }
+
+        public void Dispose()
+        {
+           /*nothing to do*/
         }
     }
 }

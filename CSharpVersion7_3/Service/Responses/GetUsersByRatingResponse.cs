@@ -3,8 +3,13 @@ using System.Collections.Generic;
 
 namespace CSharpVersion7_3.Service.Responses
 {
-    public class GetUsersByRatingResponse
+    class GetUsersByRatingResponse
     {
-        public IEnumerable<UserRating> Users { get; set; }
+        //6.0 Read-only auto-properties <code>public T Prop { get; }</code>
+        public IEnumerable<UserRating> Users { get; }
+        public GetUsersByRatingResponse(IEnumerable<UserRating> users)
+        {
+            Users = users;
+        }
     }
 }

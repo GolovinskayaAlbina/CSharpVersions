@@ -14,18 +14,12 @@ namespace CSharpVersion7_3.Client
     {
         private readonly WebAPIClient _webAPIClient;
 
-        public Client(WebAPIClient webAPIClient)
-        {
-            _webAPIClient = webAPIClient;
-        }
+        //7.0 More expression-bodied members
+        public Client(WebAPIClient webAPIClient) => _webAPIClient = webAPIClient;
 
         public async Task PringUsersByRatingAsync(int start, int end)
         {
-            var request = new GetUsersByRatingRequest
-            {
-                Start = start,
-                End = end
-            };
+            var request = new GetUsersByRatingRequest(start,end);
 
             var response = await GetFromServiceSafely<GetUsersByRatingResponse, GetUsersByRatingRequest>(
                 "service/GetUsersByRating", request);
@@ -43,14 +37,20 @@ namespace CSharpVersion7_3.Client
             //6.0 Exception filters <code>catch(x) when (x.y)</code>
             catch (HttpResponseException ex) when (ex.Response.StatusCode == HttpStatusCode.BadRequest)
             {
-                    //6.0 String interpolation <code>$"{x}: {y}"</code>
-                    Console.WriteLine($"{ex.Response.StatusCode}: {ex.Response.ReasonPhrase}");
+                //6.0 Await in Catch and Finally blocks
+                await LogException(ex);
             }
-            catch(HttpResponseException ex)
+            catch (HttpResponseException ex)
             {
-                 throw new Exception(ex.Message, ex);
+                throw new Exception(ex.Message, ex);
             }
-            return default(Res);
+            return default;
+        }
+
+        private static async Task LogException(HttpResponseException exception)
+        {
+            //6.0 String interpolation <code>$"{x}: {y}"</code>
+            await Task.Run(() => Console.WriteLine($"{exception.Response.StatusCode}: {exception.Response.ReasonPhrase}"));
         }
     }
 }
